@@ -1,9 +1,53 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import netflixLogo from "../../assets/netflix-logo.png";
 import "./SignUp.css";
 
 const SignUp = () => {
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    const formData = {
+      userName: e.target.username.value,
+      email: e.target.email.value,
+      password: e.target.password.value,
+    };
+
+    console.log("Form Data:", formData);
+
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/auth/signup`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
+
+      const data = await response.json();
+
+      console.log("Response from backend:", data);
+
+      if (response.ok) {
+          toast.success("Sign Up Successful. Please log in to continue.");
+      } else {
+        console.log("Error:", data.message);
+        toast.error(`Sign up failed. ${data.message}`);
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("Error connecting to the server.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="h-screen w-full hero-bg">
       <header className="max-w-6xl mx-auto flex items-center justify-between p-4">
@@ -17,7 +61,7 @@ const SignUp = () => {
             Sign Up
           </h1>
 
-          <form action="" className="space-y-4">
+          <form className="space-y-4" onSubmit={handleSubmit} method="POST">
             <div>
               <label
                 htmlFor="email"
@@ -43,7 +87,7 @@ const SignUp = () => {
               <input
                 type="text"
                 name=""
-                id="ysername"
+                id="username"
                 className="w-full px-3 py-2 mt-1 border border-gray-700 rounded-md bg-transparent text-white focus:outline-none foucs:ring"
                 placeholder="John Doe"
               />
@@ -64,8 +108,12 @@ const SignUp = () => {
               />
             </div>
 
-            <button className="w-full py-2 bg-red-600 text-white font-semibold rounded-md hover:bg-red-700">
-              Sign Up
+            <button
+              className="w-full py-2 bg-red-600 text-white font-semibold rounded-md hover:bg-red-700"
+              type="submit"
+              disabled={loading}
+            >
+              {loading ? "Processing..." : " Sign Up"}
             </button>
           </form>
           <div className="text-center text-gray-400">
